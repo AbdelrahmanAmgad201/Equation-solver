@@ -20,15 +20,3 @@
 4. **Jacobi Method**  
 
 5. **Gauss-Seidel Method**  
-
----
-
-## Project Structure
-
-```plaintext
-EquationSolver/
-│
-├── parser.py       # Contains the Parser class for input handling and matrix conversion.
-├── solvers.py      # Implementation of the numerical methods for equation solving.
-├── main.py         # Entry point 
-└── README.md       # Project documentation.

@@ -1,5 +1,6 @@
 from .parser import Parser
 import numpy as np
+import sympy
 from sympy import Matrix as SympyMatrix
 
 class Gauss_Elimination:
@@ -8,9 +9,8 @@ class Gauss_Elimination:
         self.parser = Parser()
         self.matrixA = None
         self.matrixB = None
-
+        
     def initialize_matrices(self):
-
         # Use the parser to extract matrices
         self.matrixA = self.parser.get_matrixA()
         self.matrixB = self.parser.get_matrixB()
