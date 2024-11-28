@@ -11,7 +11,7 @@ class HomePage:
     def __init__(self):
         self.root = tk.Tk()
         self.matrix_toolkit = None
-        self.root.geometry("750x750")
+        self.root.geometry("750x900")
 
         self.root.title("Numerical")
 
@@ -37,9 +37,24 @@ class HomePage:
         
 
         self.start_button_life = False
+        
+        self.absolute_error = None
+        self.iterations = None
 
 
         self.matrix_frame = tk.Frame(self.root)
+
+        self.special_frame = tk.Frame(self.main_frame)
+        self.initial_vector_button = tk.Button(self.special_frame, text="Initial vector", command=self.enter_initial_vector)
+
+
+        self.description = tk.Label(self.special_frame, font=('Comic Sans MS', 8))
+
+
+        self.absolute_error_button = tk.Button(self.special_frame, text="absolute_error", command=self.enter_absolute_error)
+        self.iteration_button = tk.Button(self.special_frame, text="iteration_button", command=self.enter_iterations)
+        self.absolute_error_button.grid(column=0, row=0)
+        self.iteration_button.grid(column=1,row=0)
 
         self.is_matrix_ready = False
         self.matrix = None
@@ -51,17 +66,22 @@ class HomePage:
         self.matrix_button = tk.Button(self.main_frame, text="Create Matrix", command=self.show_matrix_page)
         self.start_button = tk.Button(self.main_frame, text="Start", font=("Comic Sans MS", 10), command=self.get_matrix_details)
 
-        self.next_button = tk.Button(self.main_frame, text='Next', command=lambda: self.increment_output_index())
-        self.prev_button = tk.Button(self.main_frame, text='Previous', command=lambda: self.decrement_output_index())
-        
-
-
-
 
         self.create_menu()
 
         self.label = tk.Label(self.main_frame, text="Select number of equations", font=('Comic Sans MS', 16))
         self.label.pack(pady=20)
+
+
+        self.signifcant_digits_place_holder = "Significant digits"
+        
+        self.signifcant_digits = tk.Entry(self.main_frame, fg='gray')
+        self.signifcant_digits.insert(0, self.signifcant_digits_place_holder)
+        self.signifcant_digits.bind("<FocusIn>", self.on_focus_in)
+        self.signifcant_digits.bind("<FocusOut>", self.on_focus_out)
+
+        self.signifcant_digits.pack(pady=10)
+
 
         self.number_selector = tk.Button(self.main_frame, text="Number of equations", command=self.open_number_selector)
         self.number_selector.pack(pady=20)
@@ -84,8 +104,16 @@ class HomePage:
         self.selected_operation = tk.StringVar(self.root)
         self.selected_operation.set(self.options[0])
 
-        self.dropdown = tk.OptionMenu(self.main_frame, self.selected_operation, *self.options)
+        self.dropdown = tk.OptionMenu(self.main_frame, self.selected_operation, *self.options, command=self.on_option_change)
         self.dropdown.pack(pady=20)
+
+    def on_option_change(self, selection):
+        if selection in ["Jacobi", "Gauss Seidel"]:
+            self.special_frame.pack(pady=2)
+            self.create_initial_vector()
+            
+        else:
+            self.special_frame.pack_forget()
 
     def check_matrix_button(self):
         if self.equations_number >= 0:
@@ -109,15 +137,16 @@ class HomePage:
 
     def create_matrix_page(self):
 
-        for widget in self.main_frame.winfo_children():
-            if isinstance(widget, tk.Text):
-                widget.destroy()
+
 
         if self.matrix_toolkit is None:
             self.matrix_toolkit = matrixDelegator.MatrixDelegator(self.main_frame, self.matrix_frame, self.equations_number)
         else:
             self.matrix_frame.destroy()
             self.matrix_frame = tk.Frame(self.root)
+            for widget in self.main_frame.winfo_children():
+                if isinstance(widget, tk.Text):
+                    widget.destroy()
 
             self.matrix_toolkit = matrixDelegator.MatrixDelegator(self.main_frame, self.matrix_frame, self.equations_number)
 
@@ -136,6 +165,8 @@ class HomePage:
                 text=f"Number of equations: {self.equations_number}", foreground="#059212"
             )
             self.check_matrix_button()
+            self.create_initial_vector()
+
 
         def undo():
             self.destroy_start_button()
@@ -152,6 +183,8 @@ class HomePage:
                         text=f"Number of equations: {self.equations_number}"
                     )
             self.check_matrix_button()
+            self.create_initial_vector()
+
 
         equations_number_list = []
         number_window = tk.Toplevel(self.root)
@@ -178,10 +211,10 @@ class HomePage:
     def create_start_button(self):
 
         for widget in self.main_frame.winfo_children():
-            if isinstance(widget, tk.Toplevel):
+            if isinstance(widget, tk.Toplevel) or not shared_data.start_operation:
                 self.destroy_start_button()
                 break
-            elif isinstance(widget, tk.Text):
+            elif isinstance(widget, tk.Text) and shared_data.start_operation:
                 self.start_button.pack(pady=10)
         
         self.main_frame.after(1000, self.create_start_button)
@@ -193,10 +226,16 @@ class HomePage:
     def get_matrix_details(self):
         # Simulating matrix details retrieval
         self.matrix = self.matrix_toolkit.get_matrix()
+        
         details = {
             "method": self.selected_operation.get(),
             "size": self.equations_number,
             "matrix": self.matrix,
+            "significant digits": self.signifcant_digits.get(),
+            "absolute_error":self.absolute_error,
+            "iterations":self.iterations,
+            "initial_vector":self.initial_vector
+
         }
         shared_data.matrix_data = details
         shared_data.start_operation = True
@@ -205,5 +244,150 @@ class HomePage:
     def display_output(self,output : list):
         self.destroy_start_button()
         self.matrix_toolkit.draw_output_matrix(output)
+
+    def on_focus_in(self, event):
+        """Clears the placeholder text when the entry field is clicked."""
+        current_text = self.signifcant_digits.get()
+        if current_text == self.signifcant_digits_place_holder:
+            self.signifcant_digits.delete(0, tk.END)  # Clear the placeholder text
+            self.signifcant_digits.config(fg='black')  # Change text color to black
+
+    def on_focus_out(self, event):
+        """Restores the placeholder text if the entry field is empty."""
+        current_text = self.signifcant_digits.get()
+        if current_text == "":
+            self.signifcant_digits.insert(0, self.signifcant_digits_place_holder)  # Insert placeholder text
+            self.signifcant_digits.config(fg='gray') 
+
+
+    def enter_absolute_error(self):
+        entry_window = tk.Toplevel(self.root)
+        entry_window.title("Absolute Relative Error")
+        entry_window.geometry("300x150")
+        entry_window.resizable(False, False)
+
+        # Validation command
+        validate_command = self.root.register(self.validate_numeric_input)
+
+        # Label for guidance
+        label = tk.Label(entry_window, text="Enter Absolute Relative Error:", font=("Comic Sans MS", 12))
+        label.pack(pady=10)
+
+        # Numeric Entry with validation
+        entry = tk.Entry(
+            entry_window, validate="key", validatecommand=(validate_command, "%P")
+        )
+        entry.pack(pady=10)
+
+        # Function to handle the input and assign it to `self.absolute_error`
+        def submit():
+            value = entry.get()
+            if not value:
+                messagebox.showerror("Input Error", "Absolute error cannot be empty!")
+            else:
+                self.absolute_error = float(value)  # Convert to float
+                entry_window.destroy()
+                self.description.config(text = f"Absolute error = {self.absolute_error}")
+                self.description.grid(row=1,columnspan=2)
+                self.iterations = 0
+
+
+        # Submit Button
+        submit_button = tk.Button(entry_window, text="Submit", command=submit)
+        submit_button.pack(pady=10)
+
+
+
+    def enter_iterations(self):
+        entry_window = tk.Toplevel(self.root)
+        entry_window.title("Maximum Iterations")
+        entry_window.geometry("300x150")
+        entry_window.resizable(False, False)
+
+        # Validation command
+        validate_command = self.root.register(self.validate_numeric_input)
+
+        # Label for guidance
+        label = tk.Label(entry_window, text="Enter Maximum Iterations:", font=("Comic Sans MS", 12))
+        label.pack(pady=10)
+
+        # Numeric Entry with validation
+        entry = tk.Entry(
+            entry_window, validate="key", validatecommand=(validate_command, "%P")
+        )
+        entry.pack(pady=10)
+
+        # Function to handle the input and assign it to `self.iterations`
+        def submit():
+            value = entry.get()
+            if not value:
+                messagebox.showerror("Input Error", "Iterations cannot be empty!")
+            else:
+                self.iterations = int(value)  # Convert to integer
+                entry_window.destroy()
+                self.absolute_error = 0
+                self.description.config(text = f"Iterations = {self.iterations}")
+                self.description.grid(row=1,columnspan=2)
+
+        # Submit Button
+        submit_button = tk.Button(entry_window, text="Submit", command=submit)
+        submit_button.pack(pady=10)
+
+
+    def validate_numeric_input(self, char):
+        """Validation function for numeric input."""
+        return char.isdigit() or char == "." or char == ""
     
-    
+    def create_initial_vector(self):
+        if self.selected_operation.get() in ["Jacobi", "Gauss Seidel"] and self.equations_number >0:
+            self.initial_vector_button.grid(row=2, column=0, columnspan=2)
+        
+        else:
+            self.initial_vector_button.grid_forget()
+
+
+    def enter_initial_vector(self):
+        """
+        Opens a Toplevel window to input an initial vector of length equal to self.equations_number.
+        """
+        if self.equations_number <= 0:
+            messagebox.showerror("Error", "Number of equations must be greater than 0!")
+            return
+
+        vector_window = tk.Toplevel(self.root)
+        vector_window.title("Initial Vector")
+        vector_window.geometry("300x400")
+        vector_window.resizable(False, False)
+
+        # Instructions label
+        instruction_label = tk.Label(vector_window, text="Enter the initial vector values:")
+        instruction_label.pack(pady=10)
+
+        # Entries to store the vector values
+        self.initial_vector_entries = []
+        for i in range(self.equations_number):
+            frame = tk.Frame(vector_window)
+            frame.pack(pady=5)
+            tk.Label(frame, text=f"Value {i+1}:").pack(side=tk.LEFT, padx=5)
+            
+            entry = tk.Entry(frame, validate="key", validatecommand=(self.root.register(self.validate_numeric_input), "%P"))
+            entry.pack(side=tk.RIGHT, padx=5)
+            self.initial_vector_entries.append(entry)
+
+        # Submit button
+        submit_button = tk.Button(vector_window, text="Enter", command=lambda: self.save_initial_vector(vector_window))
+        submit_button.pack(pady=20)
+
+    def save_initial_vector(self, window):
+        """
+        Retrieves and stores the initial vector values entered by the user.
+        """
+        try:
+            self.initial_vector = [
+                float(entry.get()) for entry in self.initial_vector_entries
+            ]
+            messagebox.showinfo("Success", f"Initial vector saved: {self.initial_vector}")
+            window.destroy()
+        except ValueError:
+            messagebox.showerror("Error", "Please enter valid numeric values for the initial vector.")
+

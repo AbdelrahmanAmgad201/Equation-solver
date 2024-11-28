@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import pprint
+import shared_data
 from PIL import Image, ImageTk
 
 
@@ -12,9 +13,10 @@ class MatrixDelegator:
         self.size = size
         self.is_matrix_ready = False
 
+        self.text_widget = None
+
         self.text_widget = tk.Text(self.main_frame, wrap=tk.WORD, width=50, height=15)
         self.text_widget.pack(pady=10)
-
 
         self.output_matrix = [[None for _ in range(self.size)] for _ in range(self.size)]
 
@@ -26,12 +28,13 @@ class MatrixDelegator:
         self.confirm_matrix = tk.Button(self.matrix_frame, text="Confirm", command=self.create_matrix)
         self.confirm_matrix.grid(columnspan=self.size)
 
-        self.back_button = tk.Button(self.matrix_frame, text="Home Page", command=self.go_to_home_page)
+        self.back_button = tk.Button(self.matrix_frame, text="Home Page", command=self.home_pressed)
         self.back_button.grid(columnspan=self.size)
 
         # Button to display the pprint output of the matrix
 
     def create_entries(self):
+        shared_data.start_operation = False
         for i in range(self.size):
             for j in range(self.size +1):
                 place_holder = f'A{i}{j}'
@@ -54,6 +57,8 @@ class MatrixDelegator:
     def create_matrix(self):
         """Convert entries into a matrix, returns back to Home page if input is correct."""
         self.is_matrix_ready = True
+
+        self.text_widget.pack_forget()
 
         for index in range(self.size * (self.size + 1)):
             entry = self.all_entries[index].get().strip()  # Get and trim the entry
@@ -79,11 +84,13 @@ class MatrixDelegator:
             messagebox.showerror("ERROR!", f"Invalid input!")
         else:
             self.draw_input_matrix()  # Now calls draw_input_matrix() after matrix creation
+            shared_data.start_operation = True
             self.go_to_home_page()
 
 
     def draw_input_matrix(self):
         """Display the input matrix in a formatted way using pprint."""
+
         matrix = self.get_matrix()
 
         # Temporarily enable the Text widget to insert content
@@ -97,9 +104,11 @@ class MatrixDelegator:
 
         # Insert the formatted matrix into the Text widget
         self.text_widget.insert(tk.END, f"Input Matrix:\n{formatted_matrix}\n")
-        
+
         # Disable the Text widget to prevent typing
         self.text_widget.config(state=tk.DISABLED)
+
+        self.text_widget.pack()
 
 
 
@@ -157,14 +166,24 @@ class MatrixDelegator:
         update_matrix_display()
 
 
-
+    def home_pressed(self):
+        self.text_widget.pack_forget()
+        self.go_to_home_page()
+        
 
     def go_to_home_page(self):
-        # Hide the matrix frame
+        # Hide the matrix frame and the Text widget (if it's currently packed)
         self.matrix_frame.pack_forget()
+
+        # Optionally clear the matrix data when going back to home page
+        for entry in self.all_entries:
+            entry.delete(0, tk.END)  # Clear any text entered in the matrix fields
+            entry.config(bg='white')  # Reset background color
 
         # Show the main frame again
         self.main_frame.pack(fill='both', expand=True)
+
+
 
     def on_focus_in(self, event, placeholder):
         """Clear the placeholder text when the entry widget is focused."""
