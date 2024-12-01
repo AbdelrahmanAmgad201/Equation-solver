@@ -11,7 +11,7 @@ class Gauss_Elimination:
         self.matrixB = parser.get_matrixB()
 
 
-    def solve(self):
+    def solve(self,sf):
 
         augmented_matrix = self.matrixA.row_join(self.matrixB)
         rows, cols = augmented_matrix.shape

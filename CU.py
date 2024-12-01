@@ -36,7 +36,7 @@ class CU:
                 if the_input[1]['method'] == "Gauss":
                     solver = be.Gauss_Elimination(parser)
                     start_time = time.time()
-                    self._output = solver.solve()
+                    self._output = solver.solve(sf=the_input[1]['significant_digits'])
                     end_time = time.time()
                     self._execution_time = end_time - start_time
                 elif the_input[1]['method'] == "Jacobi":
@@ -52,25 +52,25 @@ class CU:
                 elif the_input[1]['method'] == "Crout":
                     solver = be.LU_Decomposition(parser)
                     start_time = time.time()
-                    self._output = solver.solve_LU_Crout()
+                    self._output = solver.solve_LU_Crout(sf=the_input[1]['significant_digits'])
                     end_time = time.time()
                     self._execution_time = end_time - start_time
                 elif the_input[1]['method'] == "Dolittle":
                     solver = be.LU_Decomposition(parser)
                     start_time = time.time()
-                    self._output = solver.solve_LU_Doolittle()
+                    self._output = solver.solve_LU_Doolittle(sf=the_input[1]['significant_digits'])
                     end_time = time.time()
                     self._execution_time = end_time - start_time
                 elif the_input[1]['method'] == "Cholesky":
                     solver = be.LU_Decomposition(parser)
                     start_time = time.time()
-                    self._output = solver.solve_LU_Cholesky()
+                    self._output = solver.solve_LU_Cholesky(sf=the_input[1]['significant_digits'])
                     end_time = time.time()
                     self._execution_time = end_time - start_time
                 elif the_input[1]['method'] == "Gauss Jordan":
                     solver = be.Gauss_Jordan(parser)
                     start_time = time.time()
-                    self._output = solver.solve()
+                    self._output = solver.solve(sf=the_input[1]['significant_digits'])
                     end_time = time.time()
                     self._execution_time = end_time - start_time
                 elif the_input[1]['method'] == "Gauss Seidel":
