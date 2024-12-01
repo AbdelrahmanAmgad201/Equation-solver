@@ -10,7 +10,8 @@ class Gauss_Jordan:
         self.matrixB = parser.get_matrixB()
 
 
-    def solve(self):
+    def solve(self, sf):
+        sf = int(sf)
         augmented_matrix = sp.Matrix(self.matrixA).row_join(sp.Matrix(self.matrixB).reshape(len(self.matrixB), 1))
         row_len = augmented_matrix.rows  # Number of rows
         col_num = augmented_matrix.cols  # Number of columns
@@ -27,13 +28,13 @@ class Gauss_Jordan:
             pivot = augmented_matrix[i, i]
             if pivot == 0:
                 raise ValueError(f"Matrix is singular or does not have a unique solution.")
-            augmented_matrix.row_op(i, lambda x, _: x / pivot)  # Divide the row by the pivot
+            augmented_matrix.row_op(i, lambda x, _: round(x / pivot, sf))  # Divide the row by the pivot
 
             # Eliminate all other rows
             for j in range(row_len):
                 if i != j:
                     factor = augmented_matrix[j, i]
-                    augmented_matrix.row_op(j, lambda x, k: x - factor * augmented_matrix[i, k])
+                    augmented_matrix.row_op(j, lambda x, k: round(x - round(factor * augmented_matrix[i, k], sf), sf))
 
             # Append the current state of the matrix to the solution log
             self._solution_line.append(augmented_matrix.copy())
