@@ -3,8 +3,6 @@ import sympy as sp
 class Parser:
     def __init__(self, augmented_matrix, scaled=False):
         # AX = B
-        if scaled:
-            augmented_matrix = self.scale_matrix(augmented_matrix)
 
         self.augmented_matrix = sp.Matrix(augmented_matrix)  # Convert list to SymPy Matrix
 

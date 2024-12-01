@@ -8,7 +8,6 @@ class Gauss_Elimination:
     def __init__(self,parser):
         self._solution_line = []
         self.matrixA = parser.get_matrixA()
-
         self.matrixB = parser.get_matrixB()
 
 
