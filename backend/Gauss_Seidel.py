@@ -31,7 +31,7 @@ class Gauss_Seidel:
                 self.initial[i] = (self.matrixB[i] - sum_val) / self.matrixA[i, i]
                 self.initial[i] = self.round_significant(self.initial[i], self.sf)
             self._all_iterations.append(np.copy(self.initial))
-            error_current = np.linalg.norm(self.initial - old_numbers) / np.linalg.norm(self.initial)
+            error_current= (np.max(np.abs(self.initial - old_numbers) / np.abs(self.initial)))*100
             if error_current < self.error:
                 break
         return self._all_iterations

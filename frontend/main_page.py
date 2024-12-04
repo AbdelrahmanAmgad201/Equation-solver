@@ -263,7 +263,7 @@ class Ui_Form(object):
         self.comboBox.setItemText(5, _translate("self.Form", "Gauss Jordan"))
 
         self.lineEdit.setPlaceholderText(_translate("self.Form", "Matrix Size"))
-        self.lineEdit_significant_digits.setPlaceholderText(_translate("self.Form", "Significant"))
+        self.lineEdit_significant_digits.setPlaceholderText(_translate("self.Form", "Default:10"))
 
         self.pushButton.setText(_translate("self.Form", "NEXT"))
 
@@ -275,11 +275,11 @@ class Ui_Form(object):
         if self.lineEdit.text().isdigit():
             significant_digits = self.lineEdit_significant_digits.text().strip()
             # If no significant digits entered, set a default value
-            if not significant_digits.isdigit():
-                significant_digits = "0"  # Default to 0 if not entered
+            if significant_digits.strip() =="":
+                significant_digits = "10"  # Default to 0 if not entered
 
             Observer.matrix_details = {
-                "significant_digits": self.lineEdit_significant_digits.text(),  # Store significant digits as integer
+                "significant_digits": significant_digits,  # Store significant digits as integer
                 "iterations": self.lineEdit_3.text(),
                 "matrix_size": self.lineEdit.text(),
                 "absolute_relative_error": self.lineEdit_2.text(),

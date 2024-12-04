@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QWidget):
         matrix_size = self.ui_form.lineEdit.text()
         digits = self.ui_form.lineEdit_significant_digits.text()
 
-        if not(digits.isdigit() and int(digits) > 0):
+        if (not(digits.isdigit()) or digits =="0") and digits!="":
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter significant digits.")
             return
 
@@ -93,7 +93,6 @@ class MainWindow(QtWidgets.QWidget):
 
     def go_to_matrix_display(self, matrix=None):
         if matrix is None:
-
             return
         self.display_matrix(matrix)
 
@@ -102,7 +101,3 @@ class MainWindow(QtWidgets.QWidget):
             return
         self.matrix_window = DualMatrixDisplayWindow(matrix1, matrix2)
         self.matrix_window.show()
-
-
-
-

@@ -31,7 +31,7 @@ class CU:
             if the_input[0] == None or the_input[1] == None :
                 return []
             try:
-                parser = be.Parser(the_input[0],the_input[1]['scaled'])
+                parser = be.Parser(the_input[0],bool(the_input[1]['scaled']))
 
                 if the_input[1]['method'] == "Gauss":
                     solver = be.Gauss_Elimination(parser)

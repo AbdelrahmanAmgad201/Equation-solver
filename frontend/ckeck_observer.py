@@ -31,7 +31,7 @@ class ckeck_observer:
             elif Observer.matrix_details['method'] == "Dolittle":
                 ckeck_observer.show_message(time)
                 window.display_LU_matrix(
-                    [input[0].tolist(), input[2].tolist()], [input[1].tolist(), input[2].tolist()]
+                    [input[0].tolist(), input[1].tolist()], [input[2].tolist(), input[3].tolist()]
                 )
             elif Observer.matrix_details['method'] == "Cholesky":
                 ckeck_observer.show_message(time)
