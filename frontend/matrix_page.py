@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QVBoxLayout
 from .observers import Observer
 from .constants import WIDTH, HEIGHT
 
@@ -20,7 +20,8 @@ class SecondPage(QtWidgets.QWidget):
         self.label.setScaledContents(True)
 
         # Scrollable Area
-        self.scroll_area = QScrollArea(self)
+        self.main_layout = QVBoxLayout(self)
+        self.scroll_area = QScrollArea()
         self.scroll_area.setGeometry(WIDTH // 8, HEIGHT // 8, WIDTH * 3 // 4, HEIGHT * 3 // 8)
         self.scroll_area.setStyleSheet("background: rgba(0, 0, 0, 0.5); border: 2px solid white;")
         self.scroll_area.setWidgetResizable(True)
@@ -31,6 +32,7 @@ class SecondPage(QtWidgets.QWidget):
         self.scroll_layout = QtWidgets.QVBoxLayout(self.scroll_frame)
         self.scroll_area.setWidget(self.scroll_frame)
 
+        self.main_layout.addWidget(self.scroll_area)
         # Matrix entry container
         self.matrix_entries = []
 
@@ -45,8 +47,7 @@ class SecondPage(QtWidgets.QWidget):
         self.setWindowTitle(_translate("SecondPage", "Second Page"))
 
     def go_back(self):
-        # Switch to the first page when the button is clicked
-        self.parent().setCurrentIndex(0)
+        self.parent().setCurrentIndex(1)
 
     def display_matrix_entries(self, num_rows, num_cols):
         """Display matrix input fields based on the matrix size."""
@@ -117,6 +118,8 @@ class SecondPage(QtWidgets.QWidget):
         # Update the button placement
         if not self.startButton:
             self.startButton = QtWidgets.QPushButton("Start", self)
+            self.main_layout.addWidget(self.startButton)
+
             self.startButton.setStyleSheet('''QPushButton {
                 text-align: center;
                 border: 2px solid black;
@@ -127,7 +130,7 @@ class SecondPage(QtWidgets.QWidget):
                 color: blue;
             }
             QPushButton:hover {
-                background-color: #f0f0f0;
+                background-color: black;
             }''')
             self.startButton.clicked.connect(self.get_matrix)
             self.startButton.setGeometry(WIDTH // 2 - 40, HEIGHT // 2 + HEIGHT // 4 + 10, 80, 30)
@@ -135,11 +138,13 @@ class SecondPage(QtWidgets.QWidget):
 
         if not self.backButton:
             self.backButton = QtWidgets.QPushButton("Back to First Page", self)
+            self.main_layout.addWidget(self.backButton)
+
             self.backButton.setStyleSheet('''QPushButton {
                 text-align: center;
                 border: 2px solid black;
                 border-radius: 5px;
-                background: transparent;
+                background: grey;
                 font-weight: bold;
                 padding: 5px 10px;
                 color: red;
