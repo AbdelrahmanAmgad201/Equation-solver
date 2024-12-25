@@ -21,26 +21,20 @@ def symbolic_derivative(f, order):
     f_derivative = f(x)
     for _ in range(order):
         f_derivative = diff(f_derivative, x)
-    return lambdify(x, f_derivative, "math")
-
-
-def change_lambda_implementation(f):
-    x = symbols('x')
-    sympy_expr = f(x)
-    return lambdify(x, sympy_expr, "math")
+    return lambdify(x, f_derivative)
 
 
 def floating_point_operation(value, sf):
-    return round_to_n_significant_figures(value, sf) if sf else value
+    return float(round_to_n_significant_figures(value, sf)) if sf else float(value)
+
+
+def round_to_n_significant_figures(value, n):
+    return value if value == 0 else round(value, -int(floor(log10(abs(value)))) + (n - 1))
 
 
 def count_significant_figures(value):
     value = str(value)
     return len(Decimal(value).normalize().as_tuple().digits)
-
-
-def round_to_n_significant_figures(value, n):
-    return value if value == 0 else round(value, -int(floor(log10(abs(value)))) + (n - 1))
 
 
 def string_to_lambda(func_str):
