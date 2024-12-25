@@ -93,9 +93,9 @@ class Solver:
             else:
                 self.final_result['relative_error'] = format_number(ea[-1])
                 if ea[-1] == 0:
-                    self.final_result['significant_figures'] = format_number(count_significant_figures(ea[-1]))
+                    self.final_result['significant_figures'] = count_significant_figures(ea[-1])
                 else:
-                    self.final_result['significant_figures'] = format_number(int(2 - log10(2 * ea[-1])))
+                    self.final_result['significant_figures'] = str(int(2 - log10(2 * ea[-1])))
         else:
             self.final_result['relative_error'] = "—"
             self.final_result['significant_figures'] = "—"
@@ -106,4 +106,4 @@ class Solver:
 
 
 def format_number(value):
-    return str(int(value)) if value.is_integer() else str(value)
+    return str(int(value)) if float(value).is_integer() else str(value)

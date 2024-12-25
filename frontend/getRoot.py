@@ -161,21 +161,16 @@ class MyWindow(QtWidgets.QWidget):
                                       "padding: 10px 30px;"
                                       "font-weight: 500;")
 
-        # Centering the "Get Root" button in a QHBoxLayout
-        root_button_layout = QHBoxLayout()
-        root_button_layout.addStretch(1)  # Adds stretchable space before the button
-        root_button_layout.addWidget(get_root_button)
-        root_button_layout.addStretch(1)  # Adds stretchable space after the button
 
         self.back_button = QPushButton("BACK")
         self.back_button.setStyleSheet("font-size: 24px;"
                                        "padding: 10px 30px;"
                                        "font-weight: 500;")
 
-        back_button_layout = QHBoxLayout()
-        back_button_layout.addStretch(1)
-        back_button_layout.addWidget(self.back_button)
-        back_button_layout.addStretch(1)
+        # Centering the "Get Root" button in a QHBoxLayout
+        root_button_layout = QHBoxLayout()
+        root_button_layout.addWidget(self.back_button)
+        root_button_layout.addWidget(get_root_button)
 
         # Layouts
         sig_fig_layout = QHBoxLayout()
@@ -225,7 +220,6 @@ class MyWindow(QtWidgets.QWidget):
         main_layout.addLayout(secant_Initials_layout)
         main_layout.addLayout(multiplicity_layout)
         main_layout.addLayout(root_button_layout)
-        main_layout.addLayout(back_button_layout)
 
     def handle_dropdown_change(self):
         self.hide_all_extra_input()

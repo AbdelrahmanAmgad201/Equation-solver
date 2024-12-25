@@ -38,6 +38,7 @@ class ResultWindow(QWidget):
         # Align labels
         for label in [self.root_label, self.iterations_label, self.error_label, self.significant_figures_label, self.time_label]:
             label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             main_layout.addWidget(label)
 
         self.setLayout(main_layout)
