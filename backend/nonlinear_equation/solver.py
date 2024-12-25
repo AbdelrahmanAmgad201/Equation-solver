@@ -1,7 +1,7 @@
 from math import log10
 from time import time
 
-from .numerical_util import count_significant_figures
+from .numerical_util import count_significant_figures, change_lambda_implementation
 from .root_find import (bisection,
                        false_position,
                        fixed_point,
@@ -53,6 +53,7 @@ class Solver:
         method = data['method']
         match method:
             case "Bisection" | "False-Position":
+                args['f'] = change_lambda_implementation(args['f'])
                 args['xl'] = data['low_bound']
                 args['xu'] = data['high_bound']
 
@@ -60,11 +61,13 @@ class Solver:
                 args['x0'] = data['initial_guess']
                 match method:
                     case "Fixed point":
+                        args['f'] = change_lambda_implementation(args['f'])
                         args['g'] = data['gx_equation']
                     case "First Modified Newton-Raphson":
                         args['m'] = data['multiplicity']
 
             case "Secant":
+                args['f'] = change_lambda_implementation(args['f'])
                 args['x0'] = data['secant_p1']
                 args['x1'] = data['secant_p2']
 

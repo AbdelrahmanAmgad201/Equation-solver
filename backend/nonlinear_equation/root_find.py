@@ -188,7 +188,7 @@ def newton_raphson(f, x0, es, sf, imax):
     ea = [float('inf')]
 
     for i in range(imax):
-        f_prime_xi = evaluate_symbolic_expression(f_prime, x[i])
+        f_prime_xi = f_prime(x[i])
         if f_prime_xi == 0:
             print("Error: derivative of f(x) = 0.")
             return x, ea, i, Status.ZERO_FIRST_DERIVATIVE
@@ -233,7 +233,7 @@ def first_modified_newton_raphson(f, x0, m, es, sf, imax):
     ea = [float('inf')]
 
     for i in range(imax):
-        f_prime_xi = evaluate_symbolic_expression(f_prime, x[i])
+        f_prime_xi = f_prime(x[i])
         if f_prime_xi == 0:
             print("Error: derivative of f(x) = 0.")
             return x, ea, i, Status.ZERO_FIRST_DERIVATIVE
@@ -280,8 +280,8 @@ def second_modified_newton_raphson(f, x0, es, sf, imax):
     for i in range(imax):
 
         f_xi = f(x[i])
-        f_prime_xi = evaluate_symbolic_expression(f_prime, x[i])
-        f_double_prime_xi = evaluate_symbolic_expression(f_double_prime, x[i])
+        f_prime_xi = f_prime(x[i])
+        f_double_prime_xi = f_double_prime(x[i])
 
         if f_prime_xi ** 2 - f_xi * f_double_prime_xi == 0:
             print("Error: subtractive cancellation in the denominator (f'(x)^2 - f(x) * f''(x) = 0).")

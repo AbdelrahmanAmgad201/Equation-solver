@@ -9,10 +9,11 @@ import sys
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+
+from backend.nonlinear_equation.numerical_util import string_to_lambda
 from .result_window import ResultWindow
 from backend.nonlinear_equation.solver import Solver
 from .steps import TableWindow
-from sympy import symbols, sin, cos, exp, sympify, lambdify, N
 
 
 class MyWindow(QtWidgets.QWidget):
@@ -322,7 +323,7 @@ class MyWindow(QtWidgets.QWidget):
             ax.axhline(0, color="black", linewidth=0.5, linestyle="--")  # Horizontal axis
             ax.axvline(0, color="black", linewidth=0.5, linestyle="--")  # Vertical axis
             equation = self.equation_input.text()
-            equation_lambda = self.string_to_lambda(equation, ["x"])
+            equation_lambda = string_to_lambda(equation)
             y = np.array([equation_lambda(val) for val in x])
             ax.plot(x, y, label="f(x)")
             ax.set_title("Graph of F(x)")
@@ -349,7 +350,7 @@ class MyWindow(QtWidgets.QWidget):
             ax.axvline(0, color="black", linewidth=0.5, linestyle="--")  # Vertical axis
 
             gx = self.gx_input.text()
-            gx_lambda = self.string_to_lambda(gx, ["x"])
+            gx_lambda = string_to_lambda(gx)
             y = np.array([gx_lambda(val) for val in x])
             ax.plot(x, y, label="g(x)")
             ax.plot(x, x, label="y=x", color="red")  # Plot y = x
@@ -387,7 +388,7 @@ class MyWindow(QtWidgets.QWidget):
         if method == "Fixed point":
             try:
                 gx = self.gx_input.text()
-                data['gx_equation'] = self.string_to_lambda(gx, ["x"])
+                data['gx_equation'] = string_to_lambda(gx)
             except Exception as e:
                 self.error_label.setText("Invalid G(x) equation")
                 self.error_label.show()
@@ -395,7 +396,7 @@ class MyWindow(QtWidgets.QWidget):
 
         try:
             equation = self.equation_input.text()
-            data['equation'] = self.string_to_lambda(equation, ["x"])
+            data['equation'] = string_to_lambda(equation)
         except Exception as e:
             self.error_label.setText("Invalid F(x) equation")
             self.error_label.show()
@@ -526,26 +527,6 @@ class MyWindow(QtWidgets.QWidget):
             self.table_window.show()
         except Exception as e:
             print(f"Error opening steps window: {e}")
-
-    def string_to_lambda(self, func_str, variables):
-        """
-        Converts a string function into a lambda function with sin, cos, and exp
-        wrapped in N() for numerical evaluation.
-
-        Parameters:
-            func_str (str): The function as a string.
-            variables (list): List of variables as strings (e.g., ["x", "y"]).
-
-        Returns:
-            lambda function: A lambda function ready for numerical evaluation.
-        """
-        # Define symbolic variables
-        sym_vars = symbols(variables)
-        func_expr = sympify(func_str, locals={"sin": lambda x: N(sin(x)),
-                                              "cos": lambda x: N(cos(x)),
-                                              "exp": lambda x: N(exp(x))})
-        func_lambda = lambdify(sym_vars, func_expr)
-        return func_lambda
 
 
 if __name__ == "__main__":
