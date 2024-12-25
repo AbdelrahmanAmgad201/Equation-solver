@@ -14,6 +14,7 @@ import time
 from .result_window import ResultWindow
 from .solver import Solver
 from .steps import TableWindow
+from sympy import symbols, sin, cos, exp, sympify, lambdify, N
 
 class MyWindow(QtWidgets.QWidget):
     def __init__(self):
@@ -25,8 +26,6 @@ class MyWindow(QtWidgets.QWidget):
 
     def initUI(self):
         self.setGeometry(100, 100, 1000, 800)  # Window size and position
-
-
 
         self.setStyleSheet("""
             QLineEdit {
@@ -56,11 +55,13 @@ class MyWindow(QtWidgets.QWidget):
         method_label = QLabel("Method:")
         self.dropdown = QComboBox()
         self.dropdown.addItems(["Bisection",
-                           "False-Position",
-                           "Fixed point",
-                           "Original Newton-Raphson",
-                           "Modified Newton-Raphson",
-                           "Secant"])  # Add dropdown items
+                                "False-Position",
+                                "Fixed point",
+                                "Original Newton-Raphson",
+                                "First Modified Newton-Raphson",
+                                "Second Modified Newton-Raphson",
+                                "Secant"])  # Add dropdown items
+        self.dropdown.currentIndexChanged.connect(self.handle_dropdown_change)
         
         # Equation and G(x) inputs
         self.equation_label = QLabel("Equation:")
@@ -72,7 +73,18 @@ class MyWindow(QtWidgets.QWidget):
         self.gx_label.hide()
         self.gx_input.hide()
 
-        self.dropdown.currentIndexChanged.connect(self.handle_dropdown_change)
+        self.plot_interval_label = QLabel("(x interval)")
+        self.plot_x1_label = QLabel("x1:")
+        self.plot_x1_input = QLineEdit()
+        self.plot_x2_label = QLabel("x2:")
+        self.plot_x2_input = QLineEdit()
+        
+        plot_interval_layout = QHBoxLayout()
+        plot_interval_layout.addWidget(self.plot_interval_label)
+        plot_interval_layout.addWidget(self.plot_x1_label)
+        plot_interval_layout.addWidget(self.plot_x1_input)
+        plot_interval_layout.addWidget(self.plot_x2_label)
+        plot_interval_layout.addWidget(self.plot_x2_input)
 
         self.plot_button = QPushButton("Plot Graph")
         self.plot_button.clicked.connect(self.plot_graph)
@@ -106,6 +118,16 @@ class MyWindow(QtWidgets.QWidget):
         intial_guess_layout.addWidget(self.intial_guess_label)
         intial_guess_layout.addWidget(self.intial_guess_input)
 
+        self.multiplicity_label = QLabel("Root Multiplicity:")
+        self.multiplicity_input = QLineEdit()
+
+        self.multiplicity_label.hide()
+        self.multiplicity_input.hide()
+
+        multiplicity_layout = QHBoxLayout()
+        multiplicity_layout.addWidget(self.multiplicity_label)
+        multiplicity_layout.addWidget(self.multiplicity_input)
+
         self.intial_secant_points = QLabel("Intial Points:")
         self.secant_p1 = QLabel("P1:")
         self.secant_p1_input = QLineEdit()
@@ -130,8 +152,6 @@ class MyWindow(QtWidgets.QWidget):
         get_root_button.setStyleSheet("font-size: 24px;"
                                       "padding: 10px 30px;"
                                       "font-weight: 500;")
-        
-
 
         # Centering the "Get Root" button in a QHBoxLayout
         root_button_layout = QHBoxLayout()
@@ -139,17 +159,16 @@ class MyWindow(QtWidgets.QWidget):
         root_button_layout.addWidget(get_root_button)
         root_button_layout.addStretch(1)  # Adds stretchable space after the button
 
-
         self.back_button = QPushButton("BACK")
         self.back_button.setStyleSheet("font-size: 24px;"
                                       "padding: 10px 30px;"
                                       "font-weight: 500;")
         
-                # Centering the "Get Root" button in a QHBoxLayout
         back_button_layout = QHBoxLayout()
-        back_button_layout.addStretch(1)  # Adds stretchable space before the button
+        back_button_layout.addStretch(1) 
         back_button_layout.addWidget(self.back_button)
-        back_button_layout.addStretch(1)  # Adds stretchable space after the button
+        back_button_layout.addStretch(1) 
+
         # Layouts
         sig_fig_layout = QHBoxLayout()
         sig_fig_layout.addWidget(sig_fig_label)
@@ -187,6 +206,7 @@ class MyWindow(QtWidgets.QWidget):
         main_layout.addLayout(method_layout)
         main_layout.addLayout(equation_layout)
         main_layout.addLayout(gx_layout)
+        main_layout.addLayout(plot_interval_layout)
         main_layout.addWidget(self.plot_button)
         main_layout.addWidget(self.canvas)
         main_layout.addLayout(sig_fig_layout)
@@ -195,27 +215,38 @@ class MyWindow(QtWidgets.QWidget):
         main_layout.addLayout(low_high_layout)
         main_layout.addLayout(intial_guess_layout)
         main_layout.addLayout(secant_intials_layout)
+        main_layout.addLayout(multiplicity_layout)
         main_layout.addLayout(root_button_layout)
         main_layout.addLayout(back_button_layout)
-
     
-    def handle_dropdown_change(self, index):
+    def handle_dropdown_change(self):
         self.hide_all_extra_input()
-        idx = self.dropdown.currentIndex()
-        if idx == 0 or idx == 1:
-            self.show_bisection_input()
-        if idx == 2:
-            self.show_gx_input()
-        
-        if idx in [2,3,4]:
-            self.show_intial_guess()
+        method = self.dropdown.currentText()
 
-        if idx == 5:
+        if method == "Bisection" or method == "False-Position":
+            self.show_bisection_input()
+
+        if method == "Fixed point":
+            self.show_gx_input()
+        else:
+            self.show_equation_input()
+        
+        if method in ["Fixed point","Original Newton-Raphson","First Modified Newton-Raphson","Second Modified Newton-Raphson"]:
+            self.show_intial_guess()
+        
+        if method == "First Modified Newton-Raphson":
+            self.show_multiplicity_input()
+
+        if method == "Secant":
             self.show_intial_secant_input()
 
     def show_gx_input(self):
         self.gx_label.show()
         self.gx_input.show()
+
+    def show_equation_input(self):
+        self.equation_input.show()
+        self.equation_label.show()
 
     def show_bisection_input(self):
         self.low_label.show()
@@ -233,6 +264,10 @@ class MyWindow(QtWidgets.QWidget):
         self.secant_p2.show()
         self.secant_p1_input.show()
         self.secant_p2_input.show()
+    
+    def show_multiplicity_input(self):
+        self.multiplicity_label.show()
+        self.multiplicity_input.show()
 
     def hide_all_extra_input(self):
         self.gx_label.hide()
@@ -248,149 +283,204 @@ class MyWindow(QtWidgets.QWidget):
         self.secant_p2.hide()
         self.secant_p1_input.hide()
         self.secant_p2_input.hide()
+        self.multiplicity_label.hide()
+        self.multiplicity_input.hide()
+        self.equation_input.hide()
+        self.equation_label.hide()
         
 
     def plot_graph(self):
         try:
-            equation = self.equation_input.text()
-            gx = self.gx_input.text()
-            x = np.linspace(-5, 5, 1000)
-
-            # Define allowed functions and constants
-            allowed_functions = {
-                "sin": math.sin,
-                "cos": math.cos,
-                "log": math.log,
-                "log10": math.log10,
-                "tan": math.tan,
-                "sqrt": math.sqrt,
-                "pi": math.pi,
-                "e": math.e
-            }
+            self.error_label.hide()
+            start_x = None
+            end_x = None
+            try:
+                start_x = self.plot_x1_input.text()
+                end_x = self.plot_x2_input.text()
+                if start_x == "" and end_x == "":
+                    start_x = -3
+                    end_x = 3
+                else:
+                    start_x = float(start_x)
+                    end_x = float(end_x)
+                    if (start_x == end_x):
+                        print("interval start == interval end")
+                        self.error_label.setText("Invalid Interval")
+                        self.error_label.show()
+            except Exception as e:
+                print(e)
+                self.error_label.setText("Invalid Interval")
+                self.error_label.show()
+                return
+                
+            if (end_x < start_x):
+                tmp = start_x
+                start_x = end_x
+                end_x = tmp
+            x = np.linspace(start_x, end_x, 1000)
 
             self.figure.clear()
             ax = self.figure.add_subplot(111)
             ax.axhline(0, color="black", linewidth=0.5, linestyle="--")  # Horizontal axis
             ax.axvline(0, color="black", linewidth=0.5, linestyle="--")  # Vertical axis
-
-            if self.dropdown.currentIndex() == 2:
-                y = np.array([eval(gx, {"x": val, **allowed_functions}) for val in x])
+            if self.dropdown.currentText() == "Fixed point":
+                print("hello")
+                gx = self.gx_input.text()
+                gx_lambda = self.string_to_lambda(gx, ["x"])
+                y = np.array([gx_lambda(val) for val in x])
                 ax.plot(x, y, label="g(x)")
                 ax.plot(x, x, label="y=x", color="red")  # Plot y = x
+                ax.set_title("Graph of G(x)")
             else:
-                y = np.array([eval(equation, {"x": val, **allowed_functions}) for val in x])
+                equation = self.equation_input.text()
+                equation_lambda = self.string_to_lambda(equation, ["x"])
+                y = np.array([equation_lambda(val) for val in x])
                 ax.plot(x, y, label="f(x)")
-
-            ax.set_title("Graph of Equation")
+                ax.set_title("Graph of F(x)")
+            
             ax.set_xlabel("x")
             ax.set_ylabel("y")
             ax.legend()
             self.canvas.draw()
 
         except Exception as e:
-            print(f"Error plotting graph: {e}")
+            print(e)
+            self.error_label.setText("Invalid Equation")
+            self.error_label.show()
 
 
     def get_root(self):
         data = self.get_data()
-        if (self.validate(data)):
-            (results, steps) = self.solve(data)
+        data = self.validate(data)
+        if (data != None):
+            results, steps = self.solver.solve(data)
             self.open_result_window(results)
             self.open_steps_window(steps)
 
     def validate(self, data):
-        idx = self.dropdown.currentIndex()
-        if (data['equation'] == "" and idx != 2):
+        method = self.dropdown.currentText()
+        if (data['equation'] == "" and method != "Fixed point"):
             self.error_label.setText("Enter the equation")
             self.error_label.show()
-            return False
-        
-        if idx == 2 and data['gx_equation'] == "":
+            return None
+
+        if method == "Fixed point" and data['gx_equation'] == "":
             self.error_label.setText("Enter the G(x) equation")
             self.error_label.show()
-            return False
+            return None
+
+        if method == "Fixed point":
+            try:
+                gx = self.gx_input.text()
+                data['gx_equation'] = self.string_to_lambda(gx, ["x"])
+            except Exception as e:
+                self.error_label.setText("Invalid G(x) equation")
+                self.error_label.show()
+                return None
+        else:
+            try:
+                equation = self.equation_input.text()
+                data['equation'] = self.string_to_lambda(equation, ["x"])
+            except Exception as e:
+                self.error_label.setText("Invalid F(x) equation")
+                self.error_label.show()
+                return None
 
         if not str(data['max_itr']).isdigit() or int(data['max_itr']) <= 0:
             self.error_label.setText("Maximum iterations must be a positive number")
             self.error_label.show()
-            return False
-        
+            return None
+        else:
+            data['max_itr'] = int(data['max_itr'])
+
         try:
-            tolerance = float(data['tolerance'])
-            if tolerance <= 0 or tolerance > 100:
+            data['tolerance'] = float(data['tolerance'])
+            if data['tolerance'] <= 0 or data['tolerance'] > 100:
                 self.error_label.setText("Tolerance must be a positive number not greater than 100")
                 self.error_label.show()
-                return False
+                return None
         except ValueError:
             self.error_label.setText("Tolerance must be a valid number")
             self.error_label.show()
-            return False
-        
-        if idx == 0 or idx == 1:
+            return None
+
+        if method == "Bisection" or method == "False-Position":
             try:
-                low_bound = float(data['low_bound'])
-                high_bound = float(data['high_bound'])
-                if (high_bound <= low_bound):
-                    self.error_label.setText("Invalid Low and High bounds")
-                    self.error_label.show()
-                    return False
+                data['low_bound'] = float(data['low_bound'])
+                data['high_bound'] = float(data['high_bound'])
             except ValueError:
                 self.error_label.setText("Low bound and High bound must be valid numbers")
                 self.error_label.show()
-                return False
-            
-        if not str(data['significant_figures']).isdigit() or int(data['significant_figures']) <= 0:
-            self.error_label.setText("Significant figures must be a positive number")
-            self.error_label.show()
-            return False
-        
-        if idx in [2,3,4]:
-            if data['intial_guess'] == "":
+                return None
+        if data['significant_figures'] != None:
+            if  not str(data['significant_figures']).isdigit() or int(data['significant_figures']) <= 0:
+                self.error_label.setText("Significant figures must be a positive number")
+                self.error_label.show()
+                return None
+            else:
+                data['significant_figures'] = int(data['significant_figures'])
+
+        if method in ["Fixed point", "Original Newton-Raphson", "First Modified Newton-Raphson",
+                      "Second Modified Newton-Raphson"]:
+            if data['initial_guess'] == "":
                 self.error_label.setText("Enter Intial Guess")
                 self.error_label.show()
-                return False            
+                return None
             try:
-                float(data['intial_guess'])
+                data['initial_guess'] = float(data['initial_guess'])
             except ValueError:
                 self.error_label.setText("Intial Guess must be a number")
                 self.error_label.show()
-                return False
-        
-        if idx == 5:
+                return None
+
+        if method == "First Modified Newton-Raphson":
+            if data['multiplicity'] == "":
+                self.error_label.setText("Enter root multiplicity")
+                self.error_label.show()
+                return None
+            else:
+                try:
+                    data['multiplicity'] = int(data['multiplicity'])
+                except ValueError:
+                    self.error_label.setText("Invalid Root Multiplicity")
+                    self.error_label.show()
+                    return None
+
+        if method == "Secant":
             if data['secant_p1'] == "":
                 self.error_label.setText("Enter P1")
                 self.error_label.show()
-                return False
+                return None
             elif data['secant_p2'] == "":
                 self.error_label.setText("Enter P2")
                 self.error_label.show()
-                return False
+                return None
             try:
-                float(data['secant_p1'])
+                data['secant_p1'] = float(data['secant_p1'])
             except ValueError:
                 self.error_label.setText("P1 should be a number")
                 self.error_label.show()
-                return False
+                return None
             try:
-                float(data['secant_p2'])
+                data['secant_p2'] = float(data['secant_p2'])
             except ValueError:
                 self.error_label.setText("P2 should be a number")
                 self.error_label.show()
-                return False
+                return None
 
         # If all validations pass
         self.error_label.hide()
-
-        return True
-
+        return data
+    
     def get_data(self):
         data = {}
+        data['method'] = self.dropdown.currentText()
         data['equation'] = self.equation_input.text()
         data['gx_equation'] = self.gx_input.text()
 
         data['significant_figures'] = self.sig_fig_input.text()
         if (data['significant_figures'] == ""):
-            data['significant_figures'] = 20
+            data['significant_figures'] = None
 
         data['max_itr'] = self.max_iter_input.text()
         if (data['max_itr'] == ""):
@@ -402,45 +492,16 @@ class MyWindow(QtWidgets.QWidget):
 
         data['low_bound'] = self.low_input.text()
         data['high_bound'] = self.high_input.text()
-        data['intial_guess'] = self.intial_guess_input.text()
+        data['initial_guess'] = self.intial_guess_input.text()
         data['secant_p1'] = self.secant_p1_input.text()
         data['secant_p2'] = self.secant_p2_input.text()
+        data['multiplicity'] = self.multiplicity_input.text()
         return data
-
-    def solve(self, data):
-        print("get root pressed")
-        match self.dropdown.currentIndex():
-            case 0:
-                return self.solver.bisection_method()
-            case 1:
-                return self.solver.bisection_method()
-            case 2:
-                return self.solver.bisection_method()
-            case 3:
-                return self.solver.bisection_method()
-            case 4:
-                return self.solver.bisection_method()
-            case 5:
-                return self.solver.bisection_method()
-        # match self.dropdown.currentIndex():
-        #     case 0:
-        #         return self.solver.bisection_method()
-        #     case 1:
-        #         return self.solver.false_position_method()
-        #     case 2:
-        #         return self.solver.fixed_point_method()
-        #     case 3:
-        #         return self.solver.original_newton_raphson_method()
-        #     case 4:
-        #         return self.solver.modified_newton_raphson_method()
-        #     case 5:
-        #         return self.solver.secant_method()
 
     def open_result_window(self, results):
         try:
             self.result_window = ResultWindow(results)
             self.result_window.show()
-            
         except Exception as e:
             print(f"Error opening result window: {e}")
 
@@ -450,6 +511,26 @@ class MyWindow(QtWidgets.QWidget):
             self.table_window.show()
         except Exception as e:
             print(f"Error opening steps window: {e}")
+
+    def string_to_lambda(self, func_str, variables):
+        """
+        Converts a string function into a lambda function with sin, cos, and exp
+        wrapped in N() for numerical evaluation.
+
+        Parameters:
+            func_str (str): The function as a string.
+            variables (list): List of variables as strings (e.g., ["x", "y"]).
+
+        Returns:
+            lambda function: A lambda function ready for numerical evaluation.
+        """
+        # Define symbolic variables
+        sym_vars = symbols(variables)
+        func_expr = sympify(func_str, locals={"sin": lambda x: N(sin(x)), 
+                                            "cos": lambda x: N(cos(x)), 
+                                            "exp": lambda x: N(exp(x))})
+        func_lambda = lambdify(sym_vars, func_expr)
+        return func_lambda
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
