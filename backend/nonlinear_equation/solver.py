@@ -15,7 +15,6 @@ status_messages = {
     Status.INVALID_BRACKET: "Function has the same sign at its end points.",
     Status.ZERO_FIRST_DERIVATIVE: "First derivative of f(x) = 0.",
     Status.SUBTRACTIVE_CANCELLATION: "Subtractive cancellation in the denominator.",
-    Status.TOLERANCE_NOT_REACHED: "The desired tolerance was not achieved.",
     Status.DIVERGE: "The method has diverged.",
     Status.OK: ""
 }

@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sympy import symbols
+from sympy import symbols, diff
 
 from math import floor, log10
 
@@ -24,7 +24,7 @@ def symbolic_derivative(f, order):
     x = symbols('x')
     f_derivative = f(x)
     for _ in range(order):
-        f_derivative = f_derivative.diff(x)
+        f_derivative = diff(f_derivative, x)
     return f_derivative
 
 

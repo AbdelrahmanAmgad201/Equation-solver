@@ -116,15 +116,15 @@ class MyWindow(QtWidgets.QWidget):
         self.high_label = QLabel("High:")
         self.high_input = QLineEdit()
 
-        self.intial_guess_label = QLabel("Intial Guess:")
-        self.intial_guess_input = QLineEdit()
+        self.Initial_guess_label = QLabel("Initial Guess:")
+        self.Initial_guess_input = QLineEdit()
 
-        self.intial_guess_label.hide()
-        self.intial_guess_input.hide()
+        self.Initial_guess_label.hide()
+        self.Initial_guess_input.hide()
 
-        intial_guess_layout = QHBoxLayout()
-        intial_guess_layout.addWidget(self.intial_guess_label)
-        intial_guess_layout.addWidget(self.intial_guess_input)
+        Initial_guess_layout = QHBoxLayout()
+        Initial_guess_layout.addWidget(self.Initial_guess_label)
+        Initial_guess_layout.addWidget(self.Initial_guess_input)
 
         self.multiplicity_label = QLabel("Root Multiplicity:")
         self.multiplicity_input = QLineEdit()
@@ -136,24 +136,24 @@ class MyWindow(QtWidgets.QWidget):
         multiplicity_layout.addWidget(self.multiplicity_label)
         multiplicity_layout.addWidget(self.multiplicity_input)
 
-        self.intial_secant_points = QLabel("Intial Points:")
+        self.Initial_secant_points = QLabel("Initial Points:")
         self.secant_p1 = QLabel("P1:")
         self.secant_p1_input = QLineEdit()
         self.secant_p2 = QLabel("P2:")
         self.secant_p2_input = QLineEdit()
 
-        self.intial_secant_points.hide()
+        self.Initial_secant_points.hide()
         self.secant_p1.hide()
         self.secant_p2.hide()
         self.secant_p1_input.hide()
         self.secant_p2_input.hide()
 
-        secant_intials_layout = QHBoxLayout()
-        secant_intials_layout.addWidget(self.intial_secant_points)
-        secant_intials_layout.addWidget(self.secant_p1)
-        secant_intials_layout.addWidget(self.secant_p1_input)
-        secant_intials_layout.addWidget(self.secant_p2)
-        secant_intials_layout.addWidget(self.secant_p2_input)
+        secant_Initials_layout = QHBoxLayout()
+        secant_Initials_layout.addWidget(self.Initial_secant_points)
+        secant_Initials_layout.addWidget(self.secant_p1)
+        secant_Initials_layout.addWidget(self.secant_p1_input)
+        secant_Initials_layout.addWidget(self.secant_p2)
+        secant_Initials_layout.addWidget(self.secant_p2_input)
 
         get_root_button = QPushButton("Get Root")
         get_root_button.clicked.connect(self.get_root)
@@ -221,8 +221,8 @@ class MyWindow(QtWidgets.QWidget):
         main_layout.addLayout(max_iter_layout)
         main_layout.addLayout(tolerance_layout)
         main_layout.addLayout(low_high_layout)
-        main_layout.addLayout(intial_guess_layout)
-        main_layout.addLayout(secant_intials_layout)
+        main_layout.addLayout(Initial_guess_layout)
+        main_layout.addLayout(secant_Initials_layout)
         main_layout.addLayout(multiplicity_layout)
         main_layout.addLayout(root_button_layout)
         main_layout.addLayout(back_button_layout)
@@ -239,13 +239,13 @@ class MyWindow(QtWidgets.QWidget):
 
         if method in ["Fixed point", "Original Newton-Raphson", "First Modified Newton-Raphson",
                       "Second Modified Newton-Raphson"]:
-            self.show_intial_guess()
+            self.show_Initial_guess()
 
         if method == "First Modified Newton-Raphson":
             self.show_multiplicity_input()
 
         if method == "Secant":
-            self.show_intial_secant_input()
+            self.show_Initial_secant_input()
 
     def show_gx_input(self):
         self.gx_label.show()
@@ -258,12 +258,12 @@ class MyWindow(QtWidgets.QWidget):
         self.high_label.show()
         self.high_input.show()
 
-    def show_intial_guess(self):
-        self.intial_guess_label.show()
-        self.intial_guess_input.show()
+    def show_Initial_guess(self):
+        self.Initial_guess_label.show()
+        self.Initial_guess_input.show()
 
-    def show_intial_secant_input(self):
-        self.intial_secant_points.show()
+    def show_Initial_secant_input(self):
+        self.Initial_secant_points.show()
         self.secant_p1.show()
         self.secant_p2.show()
         self.secant_p1_input.show()
@@ -281,9 +281,9 @@ class MyWindow(QtWidgets.QWidget):
         self.low_input.hide()
         self.high_label.hide()
         self.high_input.hide()
-        self.intial_guess_label.hide()
-        self.intial_guess_input.hide()
-        self.intial_secant_points.hide()
+        self.Initial_guess_label.hide()
+        self.Initial_guess_input.hide()
+        self.Initial_secant_points.hide()
         self.secant_p1.hide()
         self.secant_p2.hide()
         self.secant_p1_input.hide()
@@ -444,13 +444,13 @@ class MyWindow(QtWidgets.QWidget):
         if method in ["Fixed point", "Original Newton-Raphson", "First Modified Newton-Raphson",
                       "Second Modified Newton-Raphson"]:
             if data['initial_guess'] == "":
-                self.error_label.setText("Enter Intial Guess")
+                self.error_label.setText("Enter Initial Guess")
                 self.error_label.show()
                 return None
             try:
                 data['initial_guess'] = float(data['initial_guess'])
             except ValueError:
-                self.error_label.setText("Intial Guess must be a number")
+                self.error_label.setText("Initial Guess must be a number")
                 self.error_label.show()
                 return None
 
@@ -513,7 +513,7 @@ class MyWindow(QtWidgets.QWidget):
 
         data['low_bound'] = self.low_input.text()
         data['high_bound'] = self.high_input.text()
-        data['initial_guess'] = self.intial_guess_input.text()
+        data['initial_guess'] = self.Initial_guess_input.text()
         data['secant_p1'] = self.secant_p1_input.text()
         data['secant_p2'] = self.secant_p2_input.text()
         data['multiplicity'] = self.multiplicity_input.text()

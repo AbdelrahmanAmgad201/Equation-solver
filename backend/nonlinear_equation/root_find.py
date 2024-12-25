@@ -8,10 +8,9 @@ class Status(Enum):
     """
     OK = 0
     INVALID_BRACKET = 1
-    TOLERANCE_NOT_REACHED = 2
+    DIVERGE = 2
     SUBTRACTIVE_CANCELLATION = 3
     ZERO_FIRST_DERIVATIVE = 4
-    DIVERGE = 5
 
 
 def bisection(f, xl, xu, es, sf, imax):
@@ -59,7 +58,7 @@ def bisection(f, xl, xu, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i, x))
         if ea[i] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i] < es else Status.DIVERGE
 
 
 def false_position(f, xl, xu, es, sf, imax):
@@ -114,7 +113,7 @@ def false_position(f, xl, xu, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i, x))
         if ea[i] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i] < es else Status.DIVERGE
 
 
 def fixed_point(f, g, x0, es, sf, imax):
@@ -157,7 +156,7 @@ def fixed_point(f, g, x0, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i + 1, x))
         if ea[i + 1] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.DIVERGE
 
 
 def newton_raphson(f, x0, es, sf, imax):
@@ -201,7 +200,7 @@ def newton_raphson(f, x0, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i + 1, x))
         if ea[i + 1] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.DIVERGE
 
 
 def first_modified_newton_raphson(f, x0, m, es, sf, imax):
@@ -246,7 +245,7 @@ def first_modified_newton_raphson(f, x0, m, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i + 1, x))
         if ea[i + 1] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.DIVERGE
 
 
 def second_modified_newton_raphson(f, x0, es, sf, imax):
@@ -295,7 +294,7 @@ def second_modified_newton_raphson(f, x0, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i + 1, x))
         if ea[i + 1] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.DIVERGE
 
 
 def secant(f, x0, x1, es, sf, imax):
@@ -340,4 +339,4 @@ def secant(f, x0, x1, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i, x))
         if ea[i + 1] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.DIVERGE
