@@ -106,4 +106,4 @@ class Solver:
 
 
 def format_number(value):
-    return str(int(value)) if value.is_integer() else str(value)
+    return str(int(value)) if float(value).is_integer() else str(value)
