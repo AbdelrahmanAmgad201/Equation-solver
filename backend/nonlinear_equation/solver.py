@@ -16,6 +16,7 @@ status_messages = {
     Status.ZERO_FIRST_DERIVATIVE: "First derivative of f(x) = 0.",
     Status.SUBTRACTIVE_CANCELLATION: "Subtractive cancellation in the denominator.",
     Status.DIVERGE: "The method has diverged.",
+    Status.TOLERANCE_NOT_REACHED: "The desired tolerance was not achieved.",
     Status.OK: ""
 }
 
@@ -102,4 +103,4 @@ class Solver:
 
 
 def format_number(value):
-    return "0" if value == 0 else str(value)
+    return str(int(value)) if value.is_integer() else str(value)

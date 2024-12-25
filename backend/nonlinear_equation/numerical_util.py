@@ -6,7 +6,11 @@ from math import floor, log10
 
 
 def get_value_on_root(f, *args):
-    for arg in args: return arg if f(arg) == 0 else None
+    for arg in args:
+        if f(arg) == 0:
+            return arg
+
+    return None
 
 def calculate_relative_percent_approximate_error(i, x):
     return abs((x[i] - x[i - 1]) / x[i]) * 100 if i > 0 and x[i] != 0 else float('inf')

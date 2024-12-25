@@ -8,9 +8,11 @@ class Status(Enum):
     """
     OK = 0
     INVALID_BRACKET = 1
-    DIVERGE = 2
+    TOLERANCE_NOT_REACHED = 2
     SUBTRACTIVE_CANCELLATION = 3
     ZERO_FIRST_DERIVATIVE = 4
+    DIVERGE = 5
+
 
 
 def bisection(f, xl, xu, es, sf, imax):
@@ -58,7 +60,7 @@ def bisection(f, xl, xu, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i, x))
         if ea[i] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.DIVERGE
+    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
 
 
 def false_position(f, xl, xu, es, sf, imax):
@@ -113,7 +115,7 @@ def false_position(f, xl, xu, es, sf, imax):
         ea.append(calculate_relative_percent_approximate_error(i, x))
         if ea[i] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.DIVERGE
+    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
 
 
 def fixed_point(f, g, x0, es, sf, imax):
