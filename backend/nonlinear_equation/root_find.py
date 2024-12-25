@@ -12,6 +12,7 @@ class Status(Enum):
     SUBTRACTIVE_CANCELLATION = 3
     ZERO_FIRST_DERIVATIVE = 4
     DIVERGE = 5
+    COMPLEX = 6
 
 
 
@@ -147,7 +148,12 @@ def fixed_point(f, g, x0, es, sf, imax):
     for i in range(imax):
         # Check for divergence (overflow)
         try:
-            x.append(floating_point_operation(g(x[i]), sf))
+            xr = g(x[i])
+
+            if isinstance(xr, complex):
+                return x, ea, i, Status.COMPLEX
+
+            x.append(floating_point_operation(xr, sf))
         except OverflowError as _:
             return x, ea, i, Status.DIVERGE
 

@@ -17,6 +17,7 @@ status_messages = {
     Status.SUBTRACTIVE_CANCELLATION: "Subtractive cancellation in the denominator.",
     Status.DIVERGE: "The method has diverged.",
     Status.TOLERANCE_NOT_REACHED: "The desired tolerance was not achieved.",
+    Status.COMPLEX: "Negative value inside an even root.",
     Status.OK: ""
 }
 
