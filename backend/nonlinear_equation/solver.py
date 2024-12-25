@@ -96,6 +96,9 @@ class Solver:
                     self.final_result['significant_figures'] = format_number(count_significant_figures(ea[-1]))
                 else:
                     self.final_result['significant_figures'] = format_number(int(2 - log10(2 * ea[-1])))
+        else:
+            self.final_result['relative_error'] = "—"
+            self.final_result['significant_figures'] = "—"
 
         self.steps = [{'xr': format_number(xr_value), 'ea': format_number(ea_value)}
                       for xr_value, ea_value in zip(x, ea)]
