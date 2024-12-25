@@ -44,7 +44,7 @@ class Ui_Form(object):
         self.comboBox.addItem("Gauss")
         self.comboBox.addItem("Jacobi")
         self.comboBox.addItem("Crout")
-        self.comboBox.addItem("Dolittle")
+        self.comboBox.addItem("Doolittle")
         self.comboBox.addItem("Gauss Seidel")
         self.comboBox.addItem("Gauss Jordan")
         self.comboBox.addItem("Cholesky")
@@ -243,7 +243,7 @@ class Ui_Form(object):
         self.comboBox.setItemText(0, _translate("self.Form", "Gauss"))
         self.comboBox.setItemText(1, _translate("self.Form", "Jacobi"))
         self.comboBox.setItemText(2, _translate("self.Form", "Crout"))
-        self.comboBox.setItemText(3, _translate("self.Form", "Dolittle"))
+        self.comboBox.setItemText(3, _translate("self.Form", "Doolittle"))
         self.comboBox.setItemText(4, _translate("self.Form", "Gauss Seidel"))
         self.comboBox.setItemText(5, _translate("self.Form", "Gauss Jordan"))
 

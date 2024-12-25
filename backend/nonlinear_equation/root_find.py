@@ -31,9 +31,9 @@ def bisection(f, xl, xu, es, sf, imax):
         - Status code indicating the result of the computation.
     """
 
-
+    # Check if xl or xu are valid roots
     xr = get_value_on_root(f, xl, xu)
-    if xr:
+    if xr is not None:
         return [xr], [0], 0, Status.OK
 
     if f(xl) * f(xu) > 0:
@@ -47,17 +47,17 @@ def bisection(f, xl, xu, es, sf, imax):
     for i in range(imax):
         x.append(floating_point_operation((xl + xu) / 2, sf))
 
-        ea.append(calculate_relative_percent_approximate_error(i, x))
-        if ea[i] < es: break
-
         test = f(xu) * f(x[i])
         if test < 0:
             xl = x[i]
-        else:
+        elif test > 0:
             xu = x[i]
+        else:
+            ea.append(0)
+            break
 
-        if test == 0:
-            ea[i] = 0
+        ea.append(calculate_relative_percent_approximate_error(i, x))
+        if ea[i] < es: break
 
     return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
 
@@ -79,8 +79,9 @@ def false_position(f, xl, xu, es, sf, imax):
         - Status code indicating the result of the computation.
     """
 
+    # Check if xl or xu are valid roots
     xr = get_value_on_root(f, xl, xu)
-    if xr:
+    if xr is not None:
         return [xr], [0], 0, Status.OK
 
     if f(xl) * f(xu) > 0:
@@ -97,29 +98,30 @@ def false_position(f, xl, xu, es, sf, imax):
 
         if (fu - fl) == 0:
             print("Error: subtractive cancellation in the denominator (fu - fl = 0).")
-            return x, ea, i + 1, Status.SUBTRACTIVE_CANCELLATION
+            return x, ea, i, Status.SUBTRACTIVE_CANCELLATION
 
         x.append(floating_point_operation((xl * fu - xu * fl) / (fu - fl), sf))
         fr = f(x[i])
 
-        ea.append(calculate_relative_percent_approximate_error(i, x))
-        if ea[i] < es: break
-
-        if fr == 0:
-            break
-
         if fr * fl < 0:
             xu = x[i]
-        else:
+        elif fr * fl > 0:
             xl = x[i]
+        else:
+            ea.append(0)
+            break
+
+        ea.append(calculate_relative_percent_approximate_error(i, x))
+        if ea[i] < es: break
 
     return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
 
 
-def fixed_point(g, x0, es, sf, imax):
+def fixed_point(f, g, x0, es, sf, imax):
     """
     Perform the fixed-point iteration method to find the root of a function.
 
+    :param f: The function for which the root is to be found.
     :param g: Function g(x) for the fixed-point iteration.
     :param x0: Initial guess for the root.
     :param es: Desired tolerance for the absolute relative approximate error (percentage).
@@ -132,21 +134,30 @@ def fixed_point(g, x0, es, sf, imax):
         - Status code indicating the result of the computation.
     """
 
+    # Check if x0 is a valid root
+    xr = get_value_on_root(f, x0)
+    if xr is not None:
+        return [xr], [0], 0, Status.OK
+
     x = [x0]
     ea = [float('inf')]
     i = 0
 
     for i in range(imax):
-
+        # Check for divergence (overflow)
         try:
             x.append(floating_point_operation(g(x[i]), sf))
         except OverflowError as _:
-            return x, ea, i + 1, Status.DIVERGE
+            return x, ea, i, Status.DIVERGE
+
+        if f(x[i + 1]) == 0:
+            ea.append(0)
+            break
 
         ea.append(calculate_relative_percent_approximate_error(i + 1, x))
-        if ea[i] < es: break
+        if ea[i + 1] < es: break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
 
 
 def newton_raphson(f, x0, es, sf, imax):
@@ -166,7 +177,7 @@ def newton_raphson(f, x0, es, sf, imax):
     """
 
     xr = get_value_on_root(f, x0)
-    if xr:
+    if xr is not None:
         return [xr], [0], 0, Status.OK
 
     f_prime = symbolic_derivative(f, 1)
@@ -179,14 +190,18 @@ def newton_raphson(f, x0, es, sf, imax):
         f_prime_xi = evaluate_symbolic_expression(f_prime, x[i])
         if f_prime_xi == 0:
             print("Error: derivative of f(x) = 0.")
-            return x, ea, i + 1, Status.ZERO_FIRST_DERIVATIVE
+            return x, ea, i, Status.ZERO_FIRST_DERIVATIVE
 
         x.append(floating_point_operation(x[i] - f(x[i]) / f_prime_xi, sf))
 
-        ea.append(calculate_relative_percent_approximate_error(i + 1, x))
-        if ea[i] < es: break
+        if f(x[i + 1]) == 0:
+            ea.append(0)
+            break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
+        ea.append(calculate_relative_percent_approximate_error(i + 1, x))
+        if ea[i + 1] < es: break
+
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
 
 
 def first_modified_newton_raphson(f, x0, m, es, sf, imax):
@@ -207,7 +222,7 @@ def first_modified_newton_raphson(f, x0, m, es, sf, imax):
     """
 
     xr = get_value_on_root(f, x0)
-    if xr:
+    if xr is not None:
         return [xr], [0], 0, Status.OK
 
     f_prime = symbolic_derivative(f, 1)
@@ -220,14 +235,18 @@ def first_modified_newton_raphson(f, x0, m, es, sf, imax):
         f_prime_xi = evaluate_symbolic_expression(f_prime, x[i])
         if f_prime_xi == 0:
             print("Error: derivative of f(x) = 0.")
-            return x, ea, i + 1, Status.ZERO_FIRST_DERIVATIVE
+            return x, ea, i, Status.ZERO_FIRST_DERIVATIVE
 
         x.append(floating_point_operation(x[i] - m * f(x[i]) / f_prime_xi, sf))
 
-        ea.append(calculate_relative_percent_approximate_error(i + 1, x))
-        if ea[i] < es: break
+        if f(x[i + 1]) == 0:
+            ea.append(0)
+            break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
+        ea.append(calculate_relative_percent_approximate_error(i + 1, x))
+        if ea[i + 1] < es: break
+
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
 
 
 def second_modified_newton_raphson(f, x0, es, sf, imax):
@@ -247,7 +266,7 @@ def second_modified_newton_raphson(f, x0, es, sf, imax):
     """
 
     xr = get_value_on_root(f, x0)
-    if xr:
+    if xr is not None:
         return [xr], [0], 0, Status.OK
 
     f_prime = symbolic_derivative(f, 1)
@@ -265,14 +284,18 @@ def second_modified_newton_raphson(f, x0, es, sf, imax):
 
         if f_prime_xi ** 2 - f_xi * f_double_prime_xi == 0:
             print("Error: subtractive cancellation in the denominator (f'(x)^2 - f(x) * f''(x) = 0).")
-            return x, ea, i + 1, Status.SUBTRACTIVE_CANCELLATION
+            return x, ea, i, Status.SUBTRACTIVE_CANCELLATION
 
         x.append(floating_point_operation(x[i] - (f_xi * f_prime_xi) / (f_prime_xi ** 2 - f_xi * f_double_prime_xi), sf))
 
-        ea.append(calculate_relative_percent_approximate_error(i + 1, x))
-        if ea[i] < es: break
+        if f(x[i + 1]) == 0:
+            ea.append(0)
+            break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
+        ea.append(calculate_relative_percent_approximate_error(i + 1, x))
+        if ea[i + 1] < es: break
+
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED
 
 
 def secant(f, x0, x1, es, sf, imax):
@@ -293,11 +316,11 @@ def secant(f, x0, x1, es, sf, imax):
     """
 
     xr = get_value_on_root(f, x0, x1)
-    if xr:
+    if xr is not None:
         return [xr], [0], 0, Status.OK
 
     x = [x0, x1]
-    ea = [float('inf'), float('inf') if x1 == 0 else abs((x1 - x0) / x1)]
+    ea = [float('inf'), float('inf')]
     i = 1
 
     for i in range(1, imax):
@@ -306,11 +329,15 @@ def secant(f, x0, x1, es, sf, imax):
 
         if f_i_1 - f_i == 0:
             print("Error: subtractive cancellation in the denominator (f_i-1 - f_i = 0).")
-            return x, ea, i + 1, Status.SUBTRACTIVE_CANCELLATION
+            return x, ea, i, Status.SUBTRACTIVE_CANCELLATION
 
         x.append(floating_point_operation(x[i] - (f_i * (x[i - 1] - x[i])) / (f_i_1 - f_i), sf))
 
-        ea.append(calculate_relative_percent_approximate_error(i, x))
-        if ea[i] < es: break
+        if f(x[i + 1]) == 0:
+            ea.append(0)
+            break
 
-    return x, ea, i + 1, Status.OK if ea[i] < es else Status.TOLERANCE_NOT_REACHED
+        ea.append(calculate_relative_percent_approximate_error(i, x))
+        if ea[i + 1] < es: break
+
+    return x, ea, i + 1, Status.OK if ea[i + 1] < es else Status.TOLERANCE_NOT_REACHED

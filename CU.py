@@ -55,7 +55,7 @@ class CU:
                     self._output = solver.solve_LU_Crout(sf=the_input[1]['significant_digits'])
                     end_time = time.time()
                     self._execution_time = end_time - start_time
-                elif the_input[1]['method'] == "Dolittle":
+                elif the_input[1]['method'] == "Doolittle":
                     solver = be.LU_Decomposition(parser)
                     start_time = time.time()
                     self._output = solver.solve_LU_Doolittle(sf=the_input[1]['significant_digits'])

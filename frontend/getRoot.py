@@ -2,19 +2,18 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QLabel, QComboBox,
-    QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QPushButton
+    QApplication, QLabel, QComboBox,
+    QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton
 )
 import sys
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-import math
-import time
 from .result_window import ResultWindow
-from .solver import Solver
+from backend.nonlinear_equation.solver import Solver
 from .steps import TableWindow
 from sympy import symbols, sin, cos, exp, sympify, lambdify, N
+
 
 class MyWindow(QtWidgets.QWidget):
     def __init__(self):
@@ -38,7 +37,7 @@ class MyWindow(QtWidgets.QWidget):
                 font-size: 20px;
             }
         """)
-        
+
         self.error_label = QLabel("")
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setStyleSheet("background-color: red; color: white; font-weight: bold;"
@@ -62,14 +61,14 @@ class MyWindow(QtWidgets.QWidget):
                                 "Second Modified Newton-Raphson",
                                 "Secant"])  # Add dropdown items
         self.dropdown.currentIndexChanged.connect(self.handle_dropdown_change)
-        
+
         # Equation and G(x) inputs
-        self.equation_label = QLabel("Equation:")
+        self.equation_label = QLabel("f(x)=")
         self.equation_input = QLineEdit()
-        self.gx_label = QLabel("G(x):")
+        self.gx_label = QLabel("g(x)=")
         self.gx_input = QLineEdit()
 
-         # Initially hide G(x) input
+        # Initially hide G(x) input
         self.gx_label.hide()
         self.gx_input.hide()
 
@@ -78,7 +77,7 @@ class MyWindow(QtWidgets.QWidget):
         self.plot_x1_input = QLineEdit()
         self.plot_x2_label = QLabel("x2:")
         self.plot_x2_input = QLineEdit()
-        
+
         plot_interval_layout = QHBoxLayout()
         plot_interval_layout.addWidget(self.plot_interval_label)
         plot_interval_layout.addWidget(self.plot_x1_label)
@@ -86,8 +85,17 @@ class MyWindow(QtWidgets.QWidget):
         plot_interval_layout.addWidget(self.plot_x2_label)
         plot_interval_layout.addWidget(self.plot_x2_input)
 
-        self.plot_button = QPushButton("Plot Graph")
-        self.plot_button.clicked.connect(self.plot_graph)
+        self.plot_fx_button = QPushButton("Plot f(x)")
+        self.plot_fx_button.clicked.connect(self.plot_fx)
+
+        self.plot_gx_button = QPushButton("Plot g(x)")
+        self.plot_gx_button.clicked.connect(self.plot_gx)
+
+        self.plot_gx_button.hide()
+
+        plot_buttons_layout = QHBoxLayout()
+        plot_buttons_layout.addWidget(self.plot_fx_button)
+        plot_buttons_layout.addWidget(self.plot_gx_button)
 
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
@@ -138,11 +146,11 @@ class MyWindow(QtWidgets.QWidget):
         self.secant_p1.hide()
         self.secant_p2.hide()
         self.secant_p1_input.hide()
-        self.secant_p2_input.hide()  
+        self.secant_p2_input.hide()
 
         secant_intials_layout = QHBoxLayout()
         secant_intials_layout.addWidget(self.intial_secant_points)
-        secant_intials_layout.addWidget(self.secant_p1)      
+        secant_intials_layout.addWidget(self.secant_p1)
         secant_intials_layout.addWidget(self.secant_p1_input)
         secant_intials_layout.addWidget(self.secant_p2)
         secant_intials_layout.addWidget(self.secant_p2_input)
@@ -161,13 +169,13 @@ class MyWindow(QtWidgets.QWidget):
 
         self.back_button = QPushButton("BACK")
         self.back_button.setStyleSheet("font-size: 24px;"
-                                      "padding: 10px 30px;"
-                                      "font-weight: 500;")
-        
+                                       "padding: 10px 30px;"
+                                       "font-weight: 500;")
+
         back_button_layout = QHBoxLayout()
-        back_button_layout.addStretch(1) 
+        back_button_layout.addStretch(1)
         back_button_layout.addWidget(self.back_button)
-        back_button_layout.addStretch(1) 
+        back_button_layout.addStretch(1)
 
         # Layouts
         sig_fig_layout = QHBoxLayout()
@@ -207,7 +215,7 @@ class MyWindow(QtWidgets.QWidget):
         main_layout.addLayout(equation_layout)
         main_layout.addLayout(gx_layout)
         main_layout.addLayout(plot_interval_layout)
-        main_layout.addWidget(self.plot_button)
+        main_layout.addLayout(plot_buttons_layout)
         main_layout.addWidget(self.canvas)
         main_layout.addLayout(sig_fig_layout)
         main_layout.addLayout(max_iter_layout)
@@ -218,7 +226,7 @@ class MyWindow(QtWidgets.QWidget):
         main_layout.addLayout(multiplicity_layout)
         main_layout.addLayout(root_button_layout)
         main_layout.addLayout(back_button_layout)
-    
+
     def handle_dropdown_change(self):
         self.hide_all_extra_input()
         method = self.dropdown.currentText()
@@ -228,12 +236,11 @@ class MyWindow(QtWidgets.QWidget):
 
         if method == "Fixed point":
             self.show_gx_input()
-        else:
-            self.show_equation_input()
-        
-        if method in ["Fixed point","Original Newton-Raphson","First Modified Newton-Raphson","Second Modified Newton-Raphson"]:
+
+        if method in ["Fixed point", "Original Newton-Raphson", "First Modified Newton-Raphson",
+                      "Second Modified Newton-Raphson"]:
             self.show_intial_guess()
-        
+
         if method == "First Modified Newton-Raphson":
             self.show_multiplicity_input()
 
@@ -243,10 +250,7 @@ class MyWindow(QtWidgets.QWidget):
     def show_gx_input(self):
         self.gx_label.show()
         self.gx_input.show()
-
-    def show_equation_input(self):
-        self.equation_input.show()
-        self.equation_label.show()
+        self.plot_gx_button.show()
 
     def show_bisection_input(self):
         self.low_label.show()
@@ -264,7 +268,7 @@ class MyWindow(QtWidgets.QWidget):
         self.secant_p2.show()
         self.secant_p1_input.show()
         self.secant_p2_input.show()
-    
+
     def show_multiplicity_input(self):
         self.multiplicity_label.show()
         self.multiplicity_input.show()
@@ -272,6 +276,7 @@ class MyWindow(QtWidgets.QWidget):
     def hide_all_extra_input(self):
         self.gx_label.hide()
         self.gx_input.hide()
+        self.plot_gx_button.hide()
         self.low_label.hide()
         self.low_input.hide()
         self.high_label.hide()
@@ -285,59 +290,48 @@ class MyWindow(QtWidgets.QWidget):
         self.secant_p2_input.hide()
         self.multiplicity_label.hide()
         self.multiplicity_input.hide()
-        self.equation_input.hide()
-        self.equation_label.hide()
-        
 
-    def plot_graph(self):
+    def validate_plot_interval(self):
+        try:
+            start_x = self.plot_x1_input.text()
+            end_x = self.plot_x2_input.text()
+            if start_x == "" and end_x == "":
+                return -3, 3
+            else:
+                start_x = float(start_x)
+                end_x = float(end_x)
+                if (start_x == end_x):
+                    print("interval start == interval end")
+                    self.error_label.setText("Invalid Interval")
+                    self.error_label.show()
+                else:
+                    if (end_x < start_x):
+                        tmp = start_x
+                        start_x = end_x
+                        end_x = tmp
+                    return start_x, end_x
+        except Exception as e:
+            print(e)
+            self.error_label.setText("Invalid Interval")
+            self.error_label.show()
+            return
+
+    def plot_fx(self):
         try:
             self.error_label.hide()
-            start_x = None
-            end_x = None
-            try:
-                start_x = self.plot_x1_input.text()
-                end_x = self.plot_x2_input.text()
-                if start_x == "" and end_x == "":
-                    start_x = -3
-                    end_x = 3
-                else:
-                    start_x = float(start_x)
-                    end_x = float(end_x)
-                    if (start_x == end_x):
-                        print("interval start == interval end")
-                        self.error_label.setText("Invalid Interval")
-                        self.error_label.show()
-            except Exception as e:
-                print(e)
-                self.error_label.setText("Invalid Interval")
-                self.error_label.show()
+            start_x, end_x = self.validate_plot_interval()
+            if (start_x == None):
                 return
-                
-            if (end_x < start_x):
-                tmp = start_x
-                start_x = end_x
-                end_x = tmp
             x = np.linspace(start_x, end_x, 1000)
-
             self.figure.clear()
             ax = self.figure.add_subplot(111)
             ax.axhline(0, color="black", linewidth=0.5, linestyle="--")  # Horizontal axis
             ax.axvline(0, color="black", linewidth=0.5, linestyle="--")  # Vertical axis
-            if self.dropdown.currentText() == "Fixed point":
-                print("hello")
-                gx = self.gx_input.text()
-                gx_lambda = self.string_to_lambda(gx, ["x"])
-                y = np.array([gx_lambda(val) for val in x])
-                ax.plot(x, y, label="g(x)")
-                ax.plot(x, x, label="y=x", color="red")  # Plot y = x
-                ax.set_title("Graph of G(x)")
-            else:
-                equation = self.equation_input.text()
-                equation_lambda = self.string_to_lambda(equation, ["x"])
-                y = np.array([equation_lambda(val) for val in x])
-                ax.plot(x, y, label="f(x)")
-                ax.set_title("Graph of F(x)")
-            
+            equation = self.equation_input.text()
+            equation_lambda = self.string_to_lambda(equation, ["x"])
+            y = np.array([equation_lambda(val) for val in x])
+            ax.plot(x, y, label="f(x)")
+            ax.set_title("Graph of F(x)")
             ax.set_xlabel("x")
             ax.set_ylabel("y")
             ax.legend()
@@ -348,6 +342,33 @@ class MyWindow(QtWidgets.QWidget):
             self.error_label.setText("Invalid Equation")
             self.error_label.show()
 
+    def plot_gx(self):
+        try:
+            self.error_label.hide()
+            start_x, end_x = self.validate_plot_interval()
+            if (start_x == None):
+                return
+            x = np.linspace(start_x, end_x, 1000)
+            self.figure.clear()
+            ax = self.figure.add_subplot(111)
+            ax.axhline(0, color="black", linewidth=0.5, linestyle="--")  # Horizontal axis
+            ax.axvline(0, color="black", linewidth=0.5, linestyle="--")  # Vertical axis
+
+            gx = self.gx_input.text()
+            gx_lambda = self.string_to_lambda(gx, ["x"])
+            y = np.array([gx_lambda(val) for val in x])
+            ax.plot(x, y, label="g(x)")
+            ax.plot(x, x, label="y=x", color="red")  # Plot y = x
+            ax.set_title("Graph of g(x)")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.legend()
+            self.canvas.draw()
+
+        except Exception as e:
+            print(e)
+            self.error_label.setText("Invalid g(x)")
+            self.error_label.show()
 
     def get_root(self):
         data = self.get_data()
@@ -377,14 +398,14 @@ class MyWindow(QtWidgets.QWidget):
                 self.error_label.setText("Invalid G(x) equation")
                 self.error_label.show()
                 return None
-        else:
-            try:
-                equation = self.equation_input.text()
-                data['equation'] = self.string_to_lambda(equation, ["x"])
-            except Exception as e:
-                self.error_label.setText("Invalid F(x) equation")
-                self.error_label.show()
-                return None
+
+        try:
+            equation = self.equation_input.text()
+            data['equation'] = self.string_to_lambda(equation, ["x"])
+        except Exception as e:
+            self.error_label.setText("Invalid F(x) equation")
+            self.error_label.show()
+            return None
 
         if not str(data['max_itr']).isdigit() or int(data['max_itr']) <= 0:
             self.error_label.setText("Maximum iterations must be a positive number")
@@ -413,7 +434,7 @@ class MyWindow(QtWidgets.QWidget):
                 self.error_label.show()
                 return None
         if data['significant_figures'] != None:
-            if  not str(data['significant_figures']).isdigit() or int(data['significant_figures']) <= 0:
+            if not str(data['significant_figures']).isdigit() or int(data['significant_figures']) <= 0:
                 self.error_label.setText("Significant figures must be a positive number")
                 self.error_label.show()
                 return None
@@ -471,7 +492,7 @@ class MyWindow(QtWidgets.QWidget):
         # If all validations pass
         self.error_label.hide()
         return data
-    
+
     def get_data(self):
         data = {}
         data['method'] = self.dropdown.currentText()
@@ -526,11 +547,12 @@ class MyWindow(QtWidgets.QWidget):
         """
         # Define symbolic variables
         sym_vars = symbols(variables)
-        func_expr = sympify(func_str, locals={"sin": lambda x: N(sin(x)), 
-                                            "cos": lambda x: N(cos(x)), 
-                                            "exp": lambda x: N(exp(x))})
+        func_expr = sympify(func_str, locals={"sin": lambda x: N(sin(x)),
+                                              "cos": lambda x: N(cos(x)),
+                                              "exp": lambda x: N(exp(x))})
         func_lambda = lambdify(sym_vars, func_expr)
         return func_lambda
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
