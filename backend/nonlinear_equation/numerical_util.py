@@ -25,11 +25,11 @@ def symbolic_derivative(f, order):
 
 
 def floating_point_operation(value, sf):
-    return float(round_to_n_significant_figures(value, sf)) if sf else float(value)
+    return round_to_n_significant_figures(float(value), sf) if sf else float(value)
 
 
 def round_to_n_significant_figures(value, n):
-    return value if value == 0 else round(value, -int(floor(log10(abs(value)))) + (n - 1))
+    return 0.0 if not value else round(value, -int(floor(log10(abs(value)))) + (n - 1))
 
 
 def count_significant_figures(value):

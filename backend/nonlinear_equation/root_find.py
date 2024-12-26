@@ -1,5 +1,7 @@
 from enum import Enum
 
+from sympy import Mul
+
 from .numerical_util import *
 
 class Status(Enum):
@@ -151,7 +153,7 @@ def fixed_point(f, g, x0, es, sf, imax):
         try:
             xr = g(x[i])
 
-            if isinstance(xr, complex):
+            if isinstance(xr, (complex, Mul)):
                 return x, ea, i, Status.COMPLEX
 
             x.append(floating_point_operation(xr, sf))
