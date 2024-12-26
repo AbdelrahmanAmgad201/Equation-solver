@@ -82,7 +82,7 @@ class Solver:
 
         # Get the root
         if len(x) > 0:
-            self.final_result['root'] = "0" if x[-1] == 0 else format_number(x[-1])
+            self.final_result['root'] = format_number(x[-1])
         else:
             self.final_result['root'] = "—"
 
@@ -94,7 +94,7 @@ class Solver:
             else:
                 self.final_result['relative_error'] = format_number(ea[-1])
                 if ea[-1] == 0:
-                    self.final_result['significant_figures'] = count_significant_figures(ea[-1])
+                    self.final_result['significant_figures'] = count_significant_figures(x[-1])
                 else:
                     self.final_result['significant_figures'] = str(int(2 - log10(2 * ea[-1])))
         else:

@@ -146,6 +146,7 @@ def fixed_point(f, g, x0, es, sf, imax):
     i = 0
 
     for i in range(imax):
+
         # Check for divergence (overflow)
         try:
             xr = g(x[i])
@@ -154,12 +155,13 @@ def fixed_point(f, g, x0, es, sf, imax):
                 return x, ea, i, Status.COMPLEX
 
             x.append(floating_point_operation(xr, sf))
+
+            if f(x[i + 1]) == 0:
+                ea.append(0)
+                break
+
         except OverflowError as _:
             return x, ea, i, Status.DIVERGE
-
-        if f(x[i + 1]) == 0:
-            ea.append(0)
-            break
 
         ea.append(calculate_relative_percent_approximate_error(i + 1, x))
         if ea[i + 1] < es: break
