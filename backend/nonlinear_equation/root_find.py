@@ -1,7 +1,5 @@
 from enum import Enum
 
-from sympy import Mul
-
 from .numerical_util import *
 
 class Status(Enum):

@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-from backend.nonlinear_equation.numerical_util import string_to_lambda
+from backend.nonlinear_equation.numerical_util import string_to_lambda, sign
 from .result_window import ResultWindow
 from backend.nonlinear_equation.solver import Solver
 from .steps import TableWindow
@@ -324,7 +324,11 @@ class MyWindow(QtWidgets.QWidget):
             ax.axvline(0, color="black", linewidth=0.5, linestyle="--")  # Vertical axis
             equation = self.equation_input.text()
             equation_lambda = string_to_lambda(equation)
-            y = np.array([equation_lambda(val) for val in x])
+            y = []
+            for val in x:
+                r = sign(equation_lambda(float(val))) * abs(equation_lambda(float(val)))
+                y.append(r)
+            y = np.array(y)
             ax.plot(x, y, label="f(x)")
             ax.set_title("Graph of F(x)")
             ax.set_xlabel("x")
@@ -350,8 +354,12 @@ class MyWindow(QtWidgets.QWidget):
             ax.axvline(0, color="black", linewidth=0.5, linestyle="--")  # Vertical axis
 
             gx = self.gx_input.text()
-            gx_lambda = string_to_lambda(gx)
-            y = np.array([gx_lambda(val) for val in x])
+            equation_lambda = string_to_lambda(gx)
+            y = []
+            for val in x:
+                r = sign(equation_lambda(float(val))) * abs(equation_lambda(float(val)))
+                y.append(r)
+            y = np.array(y)
             ax.plot(x, y, label="g(x)")
             ax.plot(x, x, label="y=x", color="red")  # Plot y = x
             ax.set_title("Graph of g(x)")

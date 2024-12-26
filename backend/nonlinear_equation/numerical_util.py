@@ -1,8 +1,9 @@
 from decimal import Decimal
 from math import floor, log10
 
-from sympy import symbols, diff, lambdify, sympify
+from sympy import symbols, diff, lambdify, sympify, Mul
 
+TOLERANCE = 1e-9
 
 def get_value_on_root(f, *args):
     for arg in args:
@@ -42,3 +43,16 @@ def string_to_lambda(func_str):
     func_expr = sympify(func_str)
     func_lambda = lambdify(x, func_expr, "sympy")
     return func_lambda
+
+
+def sign(x):
+    if isinstance(x, Mul): return float('NaN') # Even root.
+    if isinstance(x, complex):
+        if abs(x.real) < TOLERANCE:
+            return float('NaN') # Even root.
+        else:
+            return -1
+    else:
+        if x > 0: return 1
+        elif x < 0: return -1
+        else: return 0
