@@ -29,9 +29,9 @@ class ResultWindow(QWidget):
             main_layout.addWidget(self.error_label)
 
         # Dynamic labels
-        self.root_label = QLabel(f"Approximate Root: {results['root']}")
+        self.root_label = QLabel(f"Approximate Root: {results['root'][:20] + "..." if len(results['root']) > 20 else results['root']}")
         self.iterations_label = QLabel(f"Number of Iterations: {results['iterations']}")
-        self.error_label = QLabel(f"Approximate Relative Error: {results['relative_error']}")
+        self.error_label = QLabel(f"Approximate Relative Error: {results['relative_error'][:20] + "..." if len(results['relative_error']) > 20 else results['relative_error']}")
         self.significant_figures_label = QLabel(f"Number of Correct Significant Figures: {results['significant_figures']}")
         self.time_label = QLabel(f"Execution Time: {results['time']:.4f} seconds")
 
